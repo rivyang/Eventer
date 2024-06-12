@@ -1,1 +1,1 @@
-# Eventer
+Eventer is a dynamic JavaScript-based frontend solution for the CommunityEvents project, designed to streamline event management and interaction. It facilitates viewing upcoming events, creating new events, and registering for events, by efficiently interacting with the backend API for seamless data exchange related to events and registrations.
