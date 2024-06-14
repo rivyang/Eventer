@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const API_URL = process.env.API_URL;
+const EVENTS_API_URL = process.env.API_URL;
 
-const fetchEvents = async () => {
+const fetchAllEvents = async () => {
   try {
-    const response = await axios.get(`${APIEntity._URL}/events`);
+    const response = await axios.get(`${EVENTS_API_URL}/events`);
     return response.data;
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -12,10 +12,10 @@ const fetchEvents = async () => {
   }
 };
 
-const createEvent = async (eventData) => {
+const addNewEvent = async (newEventData) => {
   try {
-    const response = await axios.post(`${API_URL}/events`, eventData);
-    fetchEvents();
+    const response = await axios.post(`${EVENTS_API_URL}/events`, newEventData);
+    fetchAllEvents();
     return response.data;
   } catch (error) {
     console.error("Error creating event:", error);
@@ -23,9 +23,9 @@ const createEvent = async (eventData) => {
   }
 };
 
-const registerForEvent = async (eventId, userData) => {
+const signUpForEvent = async (selectedEventId, participantData) => {
   try {
-    const response = await axios.post(`${API_URL}/events/${eventId}/register`, userData);
+    const response = await axios.post(`${EVENTS_API_URL}/events/${selectedEventId}/register`, participantData);
     alert("Registration successful!");
     return response.data;
   } catch (error) {
@@ -36,33 +36,33 @@ const registerForEvent = async (eventId, userData) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('fetchEventsBtn').addEventListener('click', fetchEvents);
+  document.getElementById('fetchEventsBtn').addEventListener('click', fetchAllEvents);
   
-  const createEventForm = document.getElementById('createEventForm');
-  if(createEventForm) {
-    createEventForm.addEventListener('submit', async (e) => {
+  const eventCreationForm = document.getElementById('createEventForm');
+  if(eventCreationForm) {
+    eventCreationForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(createEventForm);
-      const eventData = {
+      const formData = new FormData(eventCreationForm);
+      const newEventData = {
         title: formData.get('title'),
         description: formData.get('description'),
         date: formData.get('date')
       };
-      createEvent(eventData);
+      addNewEvent(newEventData);
     });
   }
   
-  const registerForm = document.getElementById('registerForm');
-  if(registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
+  const eventRegistrationForm = document.getElementById('registerForm');
+  if(eventRegistrationForm) {
+    eventRegistrationForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(registerForm);
-      const eventId = formData.get('eventId');
-      const userData = {
+      const formData = new FormData(eventRegistrationPerson);
+      const selectedEventId = formData.get('eventId');
+      const participantData = {
         name: formData.get('name'),
         email: formData.get('email')
       };
-      registerForEvent(eventId, userData);
+      signUpForEvent(selectedEventId, participantData);
     });
   }
 });
