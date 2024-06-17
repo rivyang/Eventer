@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Events</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Welcome to the Community Events Interface</h1>
+  </header>
+
+  <section id="upcoming-events">
+    <h2>Upcoming Events</h2>
+    <ul>
+      <li>Event 1: <span>Date here</span></li>
+    </ul>
+  </section>
+
+  <section id="create-event">
+    <h2>Create New Event</h2>
+    <form action="/create-event" method="POST">
+      <label for="eventName">Event Name:</label><br>
+      <input type="text" id="eventName" name="eventName" required><br>
+      
+      <label for="eventDate">Event Date:</label><br>
+      <input type="date" id="eventDate" name="eventDate" required><br>
+      
+      <label for="eventDetails">Event Details:</label><br>
+      <textarea id="eventDetails" name="eventDetails" required></textarea><br>
+      
+      <input type="submit" value="Create Event">
+    </form>
+  </section>
+
+  <section id="register-for-event">
+    <h2>Register for an Event</h2>
+    <form action="/register-event" method="POST">
+      <label for="userName">Name:</label><br>
+      <input type="text" id="userName" name="userName" required><br>
+      
+      <label for="userEmail">Email:</label><br>
+      <input type="email" id="userEmail" name="userEmail" required><br>
+      
+      <label for="selectEvent">Select Event:</label><br>
+      <select id="selectEvent" name="selectEvent" required>
+        <option value="event1">Event 1</option>
+      </select><br>
+      
+      <input type="submit" value="Register">
+    </form>
+  </section>
+</body>
+</html>
