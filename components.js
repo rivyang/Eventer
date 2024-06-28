@@ -1,13 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const EventList = ({ events }) => {
+const EventList = ({ events, onRegister }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredEvents, setFilteredEvents] = useState(events);
+
+    useEffect(() => {
+        const results = events.filter(event =>
+            event.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredEvents(results);
+    }, [searchTerm, events]);
+
     return (
         <div className="event-list">
-            {events.map((event) => (
+            <input 
+                type="text" 
+                placeholder="Filter events by title..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+            />
+            {filteredEvents.map((event) => (
                 <div key={event.id} className="event">
                     <h2>{event.title}</h2>
                     <p>{event.description}</p>
                     <span>{event.date}</span>
+                    <button onClick={() => onRegister(event.id)}>Register</button>
                 </div>
             ))}
         </div>
@@ -37,6 +54,7 @@ class RegistrationForm extends React.Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
+        this.props.onRegister(this.state);
     }
 
     render() {
@@ -64,4 +82,31 @@ const UserProfile = ({ user }) => {
     );
 };
 
-export { EventList, EventDetails, RegistrationForm, UserProfile };
+const App = () => {
+    const [events, setEvents] = useState([
+        // Your events data goes here
+    ]);
+    const [user, setUser] = useState({
+        name: "",
+        email: "",
+        events: []
+    });
+
+    const handleRegister = (eventId) => {
+        const event = events.find(event => event.id === eventId);
+        setUser(prevState => ({
+            ...prevState,
+            events: [...prevState.events, event.title]
+        }));
+    };
+
+    return (
+        <div>
+            <EventList events={events} onRegister={handleRegister} />
+            <RegistrationForm onRegister={(userData) => setUser(userData)} />
+            <UserProfile user={user} />
+        </div>
+    );
+};
+
+export { EventList, EventDetails, RegistrationForm, UserProfile, App };
