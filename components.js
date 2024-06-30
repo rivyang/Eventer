@@ -1,52 +1,31 @@
-import React, { useState, useEffect } from 'react';
-
-const EventList = ({ events, onRegister }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filteredEvents, setFilteredEvents] = useState(events);
-
-    useEffect(() => {
-        const results = events.filter(event =>
-            event.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredEvents(results);
-    }, [searchTerm, events]);
-
-    return (
-        <div className="event-list">
-            <input 
-                type="text" 
-                placeholder="Filter events by title..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-            />
-            {filteredEvents.map((event) => (
-                <div key={event.id} className="event">
-                    <h2>{event.title}</h2>
-                    <p>{event.description}</p>
-                    <span>{event.date}</span>
-                    <button onClick={() => onRegister(event.id)}>Register</button>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const EventDetails = ({ event }) => {
-    return (
-        <div className="event-details">
-            <h2>{event.title}</h2>
-            <p>{event.description}</p>
-            <span>{event.date}</span>
-            <span>{event.location}</span>
-        </div>
-    );
-};
-
 class RegistrationForm extends React.Component {
     state = {
         name: '',
         email: '',
+        errors: { name: '', email: '' },
     };
+
+    validateForm = () => {
+        const { name, email } = this.state;
+        let errors = {};
+        let formIsValid = true;
+
+        if (!name.trim()) {
+            errors.name = 'Name cannot be empty';
+            formIsValid = false;
+        }
+
+        if (!email.trim()) {
+            errors.email = 'Email cannot be empty';
+            formIsValid = false;
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            errors.email = 'Email format is invalid';
+            formIsValid = false;
+        }
+
+        this.setState({ errors });
+        return formIsValid;
+    }
 
     handleChange = (e) => {
         this.setState({ [e.target.name]: e.target.value });
@@ -54,17 +33,23 @@ class RegistrationForm extends React.Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
-        this.props.onRegister(this.state);
+        if (this.validateForm()) {
+            this.props.onRegister(this.state);
+        }
     }
 
     render() {
+        const { errors } = this.state;
+
         return (
             <form onSubmit={this.handleSubmit}>
                 <label htmlFor="name">Name:</label>
                 <input type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange} />
+                <span className="error">{errors.name}</span>
 
                 <label htmlFor="email">Email:</label>
                 <input type="email" id="email" name="email" value={this.state.email} onChange={this.handleChange} />
+                <span className="error">{errors.email}</span>
 
                 <button type="submit">Register</button>
             </form>
@@ -72,41 +57,31 @@ class RegistrationForm extends React.Component {
     }
 }
 
-const UserProfile = ({ user }) => {
-    return (
-        <div className="user-profile">
-            <h2>{user.name}</h2>
-            <p>Email: {user.email}</p>
-            <p>Registered Events: {user.events.join(', ')}</p>
-        </div>
-    );
-};
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
 
-const App = () => {
-    const [events, setEvents] = useState([
-        // Your events data goes here
-    ]);
-    const [user, setUser] = useState({
-        name: "",
-        email: "",
-        events: []
-    });
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
 
-    const handleRegister = (eventId) => {
-        const event = events.find(event => event.id === eventId);
-        setUser(prevState => ({
-            ...prevState,
-            events: [...prevState.events, event.title]
-        }));
-    };
+    componentDidCatch(error, errorResources) {
+        console.error("Uncaught error:", error, errorInfo);
+    }
 
-    return (
-        <div>
-            <EventList events={events} onRegister={handleRegister} />
-            <RegistrationForm onRegister={(userData) => setUser(userData)} />
-            <UserProfile user={user} />
-        </div>
-    );
-};
+    render() {
+        if (this.state.hasError) {
+            return <h2>Something went wrong.</h2>;
+        }
 
-export { EventList, EventDetails, RegistrationForm, UserProfile, App };
+        return this.props.children;
+    }
+}
+
+const AppWithBoundary = () => (
+    <ErrorBoundary>
+        <App />
+    </ErrorBoundary>
+);
