@@ -1,55 +1,55 @@
 class RegistrationForm extends React.Component {
     state = {
-        name: '',
-        email: '',
-        errors: { name: '', email: '' },
+        userName: '',
+        userEmail: '',
+        validationErrors: { userName: '', userEmail: '' },
     };
 
-    validateForm = () => {
-        const { name, email } = this.state;
-        let errors = {};
-        let formIsValid = true;
+    isFormValid = () => {
+        const { userName, userEmail } = this.state;
+        let validationErrors = {};
+        let isFormValid = true;
 
-        if (!name.trim()) {
-            errors.name = 'Name cannot be empty';
-            formIsValid = false;
+        if (!userName.trim()) {
+            validationErrors.userName = 'Name cannot be empty';
+            isFormValid = false;
         }
 
-        if (!email.trim()) {
-            errors.email = 'Email cannot be empty';
-            formIsValid = false;
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-            errors.email = 'Email format is invalid';
-            formIsValid = false;
+        if (!userEmail.trim()) {
+            validationErrors.userEmail = 'Email cannot be empty';
+            isFormValid = false;
+        } else if (!/\S+@\S+\.\S+/.test(userEmail)) {
+            validationErrors.userEmail = 'Email format is invalid';
+            isFormValid = false;
         }
 
-        this.setState({ errors });
-        return formIsValid;
+        this.setState({ validationErrors });
+        return isFormValid;
     }
 
-    handleChange = (e) => {
+    handleInputChange = (e) => {
         this.setState({ [e.target.name]: e.target.value });
     }
 
-    handleSubmit = (e) => {
+    handleFormSubmit = (e) => {
         e.preventDefault();
-        if (this.validateForm()) {
-            this.props.onRegister(this.state);
+        if (this.isFormValid()) {
+            this.props.onUserRegister(this.state);
         }
     }
 
     render() {
-        const { errors } = this.state;
+        const { validationErrors, userName, userEmail } = this.state;
 
         return (
-            <form onSubmit={this.handleSubmit}>
-                <label htmlFor="name">Name:</label>
-                <input type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange} />
-                <span className="error">{errors.name}</span>
+            <form onSubmit={this.handleFormSubmit}>
+                <label htmlFor="userName">Name:</label>
+                <input type="text" id="userName" name="userName" value={userName} onChange={this.handleInputChange} />
+                <span className="error">{validationErrors.userName}</span>
 
-                <label htmlFor="email">Email:</label>
-                <input type="email" id="email" name="email" value={this.state.email} onChange={this.handleChange} />
-                <span className="error">{errors.email}</span>
+                <label htmlFor="userEmail">Email:</label>
+                <input type="email" id="userEmail" name="userEmail" value={userEmail} onChange={this.handleInputChange} />
+                <span className="error">{validationErrors.userEmail}</span>
 
                 <button type="submit">Register</button>
             </form>
@@ -60,19 +60,23 @@ class RegistrationForm extends React.Component {
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { hasError: false };
+        this.state = { hasErrorOccurred: false };
     }
 
     static getDerivedStateFromError(error) {
-        return { hasError: true };
+        return { hasErrorOccurred: true };
     }
 
-    componentDidCatch(error, errorResources) {
+    logErrorToConsole = (error, errorInfo) => {
         console.error("Uncaught error:", error, errorInfo);
     }
 
+    componentDidCatch(error, errorExpert) {
+        this.logErrorToConsole(error, errorExpert);
+    }
+
     render() {
-        if (this.state.hasError) {
+        if (this.state.hasErrorOccurred) {
             return <h2>Something went wrong.</h2>;
         }
 
