@@ -3,13 +3,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 
 load_dotenv()
 DATABASE_URI = os.getenv('DATABASE_URI')
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_FLAG or 'sqlite:///:memory:'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI or 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Configure cache
+app.config['CACHE_TYPE'] = 'simple'  # Consider 'redis' or other types for production
+cache = Cache(app)
+
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -57,9 +62,12 @@ def create_event():
     new_event = Event(title=title, description=description, date=date)
     db.session.add(new_event)
     db.session.commit()
+    # Invalidate cache
+    cache.delete_memoized(list_events)
     return jsonify({'message': 'Event created successfully'}), 201
 
 @app.route('/events', methods=['GET'])
+@cache.cached(timeout=50, key_prefix='all_events')
 def list_events():
     events = Event.query.all()
     output = []
@@ -75,6 +83,7 @@ def register():
     new_registration = Registration(user_id=user_id, event_id=event_id)
     db.session.add(new_registration)
     db.session.commit()
+    # Potentially rethink cache strategy here if registrations need to reflect immediately in some list
     return jsonify({'message': 'Registration successful'}), 201
 
 if __name__ == '__main__':
