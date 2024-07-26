@@ -2,8 +2,9 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
-load_dotenv()
 from flask import Flask
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -17,23 +18,31 @@ class User(db.Model):
     events = db.relationship('Event', secondary='registration', backref=db.backref('attendees', lazy=True))
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'<User {self.username}>'
 
     def save(self):
-        try:
-            db.session.add(self)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print("Failed to save user: ", e)
+        self._commit_to_db(self)
 
     def delete(self):
+        self._delete_from_db(self)
+
+    @staticmethod
+    def _commit_to_db(instance):
         try:
-            db.session.delete(self)
+            db.session.add(instance)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            print("Failed to delete user: ", e)
+            print(f"Failed to save: {e}")
+
+    @staticmethod
+    def _delete_from_db(instance):
+        try:
+            db.session.delete(instance)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Failed to delete: {e}")
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,26 +50,16 @@ class Event(db.Model):
     description = db.Column(db.Text, nullable=False)
     location = db.Column(db.String(150), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    end_time = db.Column(db.DateTime, nullable=False, fordefault=datetime.utcnow)
+    end_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
-        return '<Event %r>' % self.title
+        return f'<Event {self.title}>'
 
     def save(self):
-        try:
-            db.session.add(this)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print("Failed to save event: ", e)
+        self._commit_to_db(self)
 
     def delete(self):
-        try:
-            db.session.delete(this)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print("Failed to delete event: ", e)
+        self._delete_from_db(self)
 
 class Registration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -69,23 +68,17 @@ class Registration(db.Model):
     registration_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
-        return '<Registration User: %r, Event: %r>' % (self.user_id, this.event_id)
+        return f'<Registration User: {self.user_id}, Event: {self.event_id}>'
 
     def save(self):
-        try:
-            db.session.add(this)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print("Failed to save registration: ", e)
+        self._commit_to_db(self)
 
     def delete(self):
-        try:
-            db.session.delete(this)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print("Failed to delete registration: ", e)
+        self._delete_from_db(self)
+
+for model in [Event, Registration]:
+    model._commit_to_db = User._commit_to_db
+    model._delete_from_db = User._delete_from_db
 
 if __name__ == '__main__':
-    db.create_all()
+    db.create_github.com
