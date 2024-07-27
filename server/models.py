@@ -15,34 +15,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    events = db.relationship('Event', secondary='registration', backref=db.backref('attendees', lazy=True))
+    events = db.relationship('Event', secondary='registration', backref=db.backref('attendees', lazy='dynamic'))
 
     def __repr__(self):
         return f'<User {self.username}>'
-
-    def save(self):
-        self._commit_to_db(self)
-
-    def delete(self):
-        self._delete_from_db(self)
-
-    @staticmethod
-    def _commit_to_db(instance):
-        try:
-            db.session.add(instance)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Failed to save: {e}")
-
-    @staticmethod
-    def _delete_from_db(instance):
-        try:
-            db.session.delete(instance)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Failed to delete: {e}")
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,12 +31,6 @@ class Event(db.Model):
     def __repr__(self):
         return f'<Event {self.title}>'
 
-    def save(self):
-        self._commit_to_db(self)
-
-    def delete(self):
-        self._delete_from_db(self)
-
 class Registration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -70,15 +40,18 @@ class Registration(db.Model):
     def __repr__(self):
         return f'<Registration User: {self.user_id}, Event: {self.event_id}>'
 
-    def save(self):
-        self._commit_to_db(self)
-
-    def delete(self):
-        self._delete_from_db(self)
-
-for model in [Event, Registration]:
-    model._commit_to_db = User._commit_to_db
-    model._delete_from_db = User._delete_from_db
+def bulk_save_objects(objects):
+    try:
+        db.session.bulk_save_objects(objects)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Failed to bulk save objects: {e}")
 
 if __name__ == '__main__':
-    db.create_github.com
+    db.create_all()  
+
+    users_to_add = [
+        User(username=f'user{i}', email=f'user{i}@example.com') for i in range(10)
+    ]
+    bulk_save_objects(users_to_add)
